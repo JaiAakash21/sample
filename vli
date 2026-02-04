@@ -1,0 +1,108 @@
+import os
+
+FILE_NAME = "tasks.txt"
+tasks = []
+
+def load_tasks():
+    if os.path.exists(FILE_NAME):
+        with open(FILE_NAME, "r") as f:
+            for line in f:
+                name, priority, due, status = line.strip().split("|")
+                tasks.append({
+                    "name": name,
+                    "priority": priority,
+                    "due": due,
+                    "status": status
+                })
+
+def save_tasks():
+    with open(FILE_NAME, "w") as f:
+        for task in tasks:
+            f.write(f"{task['name']}|{task['priority']}|{task['due']}|{task['status']}\n")
+
+def show_tasks():
+    if not tasks:
+        print("\nNo tasks available.")
+        return
+
+    print("\n--- TASK LIST ---")
+    for i, task in enumerate(tasks, start=1):
+        print(f"{i}. {task['name']} | Priority: {task['priority']} | Due: {task['due']} | Status: {task['status']}")
+
+def add_task():
+    name = input("Enter task name: ")
+    priority = input("Enter priority (High/Medium/Low): ")
+    due = input("Enter due date (DD-MM-YYYY): ")
+    tasks.append({
+        "name": name,
+        "priority": priority,
+        "due": due,
+        "status": "Pending"
+    })
+    save_tasks()
+    print("Task added successfully!")
+
+def remove_task():
+    show_tasks()
+    try:
+        index = int(input("Enter task number to remove: ")) - 1
+        removed = tasks.pop(index)
+        save_tasks()
+        print(f"Task '{removed['name']}' removed.")
+    except:
+        print("Invalid input.")
+
+def mark_complete():
+    show_tasks()
+    try:
+        index = int(input("Enter task number to mark completed: ")) - 1
+        tasks[index]["status"] = "Completed"
+        save_tasks()
+        print("Task marked as completed!")
+    except:
+        print("Invalid input.")
+
+def edit_task():
+    show_tasks()
+    try:
+        index = int(input("Enter task number to edit: ")) - 1
+        tasks[index]["name"] = input("New task name: ")
+        tasks[index]["priority"] = input("New priority: ")
+        tasks[index]["due"] = input("New due date: ")
+        save_tasks()
+        print("Task updated successfully!")
+    except:
+        print("Invalid input.")
+
+def menu():
+    print("""
+--- ADVANCED CLI TASK MANAGER ---
+1. Add Task
+2. View Tasks
+3. Edit Task
+4. Remove Task
+5. Mark Task as Completed
+6. Exit
+""")
+
+load_tasks()
+
+while True:
+    menu()
+    choice = input("Choose option (1-6): ")
+
+    if choice == "1":
+        add_task()
+    elif choice == "2":
+        show_tasks()
+    elif choice == "3":
+        edit_task()
+    elif choice == "4":
+        remove_task()
+    elif choice == "5":
+        mark_complete()
+    elif choice == "6":
+        print("Goodbye! Tasks saved.")
+        break
+    else:
+        print("Invalid choice. Try again.")
