@@ -1,0 +1,101 @@
+import speech_recognition as sr
+import pyttsx3
+import os
+
+FILE_NAME = "vui_tasks.txt"
+tasks = []
+
+engine = pyttsx3.init()
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+def listen():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        speak("Listening")
+        audio = r.listen(source)
+        try:
+            command = r.recognize_google(audio)
+            print("You said:", command)
+            return command.lower()
+        except:
+            speak("Sorry, I did not understand")
+            return ""
+
+def load_tasks():
+    if os.path.exists(FILE_NAME):
+        with open(FILE_NAME, "r") as f:
+            for line in f:
+                tasks.append(line.strip())
+
+def save_tasks():
+    with open(FILE_NAME, "w") as f:
+        for task in tasks:
+            f.write(task + "\n")
+
+def add_task(command):
+    task = command.replace("add task", "").strip()
+    if task:
+        tasks.append(f"{task} | Pending")
+        save_tasks()
+        speak("Task added successfully")
+    else:
+        speak("Please say the task name")
+
+def remove_task(command):
+    task = command.replace("remove task", "").strip()
+    for t in tasks:
+        if task in t:
+            tasks.remove(t)
+            save_tasks()
+            speak("Task removed")
+            return
+    speak("Task not found")
+
+def list_tasks():
+    if not tasks:
+        speak("You have no tasks")
+    else:
+        speak("Your tasks are")
+        for t in tasks:
+            speak(t)
+
+def complete_task(command):
+    task = command.replace("complete task", "").strip()
+    for i, t in enumerate(tasks):
+        if task in t:
+            tasks[i] = t.replace("Pending", "Completed")
+            save_tasks()
+            speak("Task marked as completed")
+            return
+    speak("Task not found")
+
+def main():
+    load_tasks()
+    speak("Voice task manager started")
+
+    while True:
+        command = listen()
+
+        if "add task" in command:
+            add_task(command)
+
+        elif "remove task" in command:
+            remove_task(command)
+
+        elif "list tasks" in command:
+            list_tasks()
+
+        elif "complete task" in command:
+            complete_task(command)
+
+        elif "exit" in command or "stop" in command:
+            speak("Goodbye")
+            break
+
+        else:
+            speak("Please say a valid command")
+
+main()
